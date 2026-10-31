@@ -13,6 +13,7 @@ import 'package:hiddify/core/notification/in_app_notification_controller.dart';
 import 'package:hiddify/core/router/go_router/go_router_notifier.dart';
 import 'package:hiddify/core/router/go_router/helper/active_breakpoint_notifier.dart';
 import 'package:hiddify/core/theme/app_theme.dart';
+import 'package:hiddify/core/theme/appearance_settings.dart';
 import 'package:hiddify/core/theme/theme_preferences.dart';
 import 'package:hiddify/features/app_based_routing/overview/app_based_routing_notifier.dart';
 import 'package:hiddify/features/app_update/notifier/app_update_notifier.dart';
@@ -54,7 +55,8 @@ class App extends HookConsumerWidget with WidgetsBindingObserver, PresLogger {
     final router = ref.watch(goRouterNotiferProvider);
     final locale = ref.watch(localePreferencesProvider);
     final themeMode = ref.watch(themePreferencesProvider);
-    final theme = AppTheme(themeMode, locale.preferredFontFamily);
+    final appearance = ref.watch(appearanceProvider);
+    final theme = AppTheme(themeMode, locale.preferredFontFamily, appearance);
     final upgrader = ref.watch(upgraderProvider);
     final activeBreakpoint = Breakpoint(context).activeBreakpoint;
 
@@ -87,6 +89,15 @@ class App extends HookConsumerWidget with WidgetsBindingObserver, PresLogger {
                 title: Constants.appName,
                 builder: (context, child) {
                   final theme = Theme.of(context);
+                  if (appearance.fontScale != 1.0) {
+                    final mediaQuery = MediaQuery.of(context);
+                    child = MediaQuery(
+                      data: mediaQuery.copyWith(
+                        textScaler: TextScaler.linear(mediaQuery.textScaler.scale(1.0) * appearance.fontScale),
+                      ),
+                      child: child ?? const SizedBox(),
+                    );
+                  }
                   child = SnackBarHost(
                     child: UpgradeAlert(
                       upgrader: upgrader,
