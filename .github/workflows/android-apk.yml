@@ -27,6 +27,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      # Все мои правки лежат в одном файле overlay.zip в корне репозитория.
+      # Он накладывается на код перед сборкой, поэтому достаточно заменить этот один файл.
+      - name: Apply overlay
+        run: |
+          if [ -f overlay.zip ]; then
+            unzip -o overlay.zip -x '.github/*'
+            echo "overlay.zip applied"
+          else
+            echo "overlay.zip not found, building the code as is"
+          fi
+
       - name: Free disk space
         run: |
           sudo rm -rf /usr/share/dotnet /opt/ghc /opt/hostedtoolcache/CodeQL
