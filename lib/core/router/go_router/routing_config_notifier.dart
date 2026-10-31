@@ -23,6 +23,7 @@ import 'package:hiddify/features/route_rules/overview/package_names_page.dart';
 import 'package:hiddify/features/route_rules/overview/rule_page.dart';
 import 'package:hiddify/features/settings/overview/sections/chain_options_page.dart';
 import 'package:hiddify/features/settings/overview/sections/dns_options_page.dart';
+import 'package:hiddify/features/settings/overview/sections/appearance_page.dart';
 import 'package:hiddify/features/settings/overview/sections/general_page.dart';
 import 'package:hiddify/features/settings/overview/sections/inbound_options_page.dart';
 import 'package:hiddify/features/settings/overview/sections/routing_options_page.dart';
@@ -176,6 +177,12 @@ class RoutingConfigNotifier extends _$RoutingConfigNotifier {
                   path: '/settings',
                   builder: (_, _) => FocusScope(node: branchesScope['settings'], child: SettingsPage()),
                   routes: <GoRoute>[
+                    GoRoute(
+                      name: 'appearance',
+                      path: 'appearance',
+                      pageBuilder: (_, state) =>
+                          customTransition(TransitionType.slide, state.pageKey, const AppearancePage()),
+                    ),
                     GoRoute(
                       name: 'general',
                       path: 'general',
