@@ -1,33 +1,58 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hiddify/core/theme/app_theme_mode.dart';
+import 'package:hiddify/core/theme/appearance_settings.dart';
 import 'package:hiddify/core/theme/theme_extensions.dart';
 
 class AppTheme {
-  AppTheme(this.mode, this.fontFamily);
+  AppTheme(this.mode, this.fontFamily, [this.appearance = const AppearanceSettings()]);
   final AppThemeMode mode;
   final String fontFamily;
+  final AppearanceSettings appearance;
 
-  ThemeData lightTheme(ColorScheme? lightColorScheme) {
-    final ColorScheme scheme = lightColorScheme ?? ColorScheme.fromSeed(seedColor: const Color(0xFF293CA0));
+  /// A chosen main colour wins; otherwise the system (wallpaper) colours, then the default blue.
+  ColorScheme _scheme(ColorScheme? systemScheme, Brightness brightness) {
+    final seed = appearance.seedColor;
+    if (seed != null) return ColorScheme.fromSeed(seedColor: seed, brightness: brightness);
+    return systemScheme ?? ColorScheme.fromSeed(seedColor: AppearanceSettings.defaultSeed, brightness: brightness);
+  }
+
+  ConnectionButtonTheme get _buttonTheme => ConnectionButtonTheme(
+    idleColor: appearance.idleButtonColor ?? ConnectionButtonTheme.light.idleColor,
+    connectedColor: appearance.connectedButtonColor ?? ConnectionButtonTheme.light.connectedColor,
+  );
+
+  ThemeData _build(ColorScheme scheme, {Color? scaffoldBackgroundColor}) {
+    final radius = appearance.cornerRadius;
+    final shape = radius == null ? null : RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius));
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
+      scaffoldBackgroundColor: scaffoldBackgroundColor,
       fontFamily: fontFamily,
-      extensions: const <ThemeExtension<dynamic>>{ConnectionButtonTheme.light},
+      cardTheme: shape == null ? null : CardThemeData(shape: shape),
+      dialogTheme: shape == null ? null : DialogThemeData(shape: shape),
+      elevatedButtonTheme: shape == null
+          ? null
+          : ElevatedButtonThemeData(style: ElevatedButton.styleFrom(shape: shape)),
+      filledButtonTheme: shape == null ? null : FilledButtonThemeData(style: FilledButton.styleFrom(shape: shape)),
+      outlinedButtonTheme: shape == null
+          ? null
+          : OutlinedButtonThemeData(style: OutlinedButton.styleFrom(shape: shape)),
+      inputDecorationTheme: radius == null
+          ? null
+          : InputDecorationTheme(border: OutlineInputBorder(borderRadius: BorderRadius.circular(radius))),
+      extensions: <ThemeExtension<dynamic>>{_buttonTheme},
     );
   }
 
+  ThemeData lightTheme(ColorScheme? lightColorScheme) {
+    return _build(_scheme(lightColorScheme, Brightness.light));
+  }
+
   ThemeData darkTheme(ColorScheme? darkColorScheme) {
-    final ColorScheme scheme =
-        darkColorScheme ?? ColorScheme.fromSeed(seedColor: const Color(0xFF293CA0), brightness: Brightness.dark);
-    return ThemeData(
-      useMaterial3: true,
-      colorScheme: scheme,
-      scaffoldBackgroundColor: mode.trueBlack ? Colors.black : scheme.surface,
-      fontFamily: fontFamily,
-      extensions: const <ThemeExtension<dynamic>>{ConnectionButtonTheme.light},
-    );
+    final ColorScheme scheme = _scheme(darkColorScheme, Brightness.dark);
+    return _build(scheme, scaffoldBackgroundColor: mode.trueBlack ? Colors.black : scheme.surface);
   }
 
   CupertinoThemeData cupertinoThemeData(bool sysDark, ColorScheme? lightColorScheme, ColorScheme? darkColorScheme) {
