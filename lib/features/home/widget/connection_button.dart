@@ -69,7 +69,7 @@ class ConnectionButton extends HookConsumerWidget {
     // the speeds the button's light follows while connected
     final stats = ref.watch(statsNotifierProvider).valueOrNull;
 
-    const buttonTheme = ConnectionButtonTheme.light;
+    final buttonTheme = Theme.of(context).extension<ConnectionButtonTheme>() ?? ConnectionButtonTheme.light;
     final today = DateTime.now();
     return _ConnectionButton(
       look: look,
