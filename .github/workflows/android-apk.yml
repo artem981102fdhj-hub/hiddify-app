@@ -1,0 +1,83 @@
+name: Build Android APK
+
+# Запуск вручную: вкладка Actions -> Build Android APK -> Run workflow.
+# Также собирается автоматически при каждом пуше в main.
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: android-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FLUTTER_VERSION: '3.38.5'
+  # prod = ядро hiddify-core из релиза v5.2.0 (версия приложения совпадает), а не dev-сборка "draft"
+  CHANNEL: prod
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /opt/hostedtoolcache/CodeQL
+          sudo apt-get autoremove -y
+          sudo apt-get clean
+          df -h
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'zulu'
+          java-version: 17
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2.21.0
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+
+      - name: Cache Gradle
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+
+      # pub get + build_runner + slang (переводы) + загрузка нативного ядра (hiddify-core) для Android
+      - name: Prepare (generate code, translations, download core)
+        run: make android-prepare
+
+      # Без своего ключа подписи APK подписывается debug-ключом: он устанавливается и работает.
+      # Обновляться поверх можно только сборками, подписанными тем же ключом.
+      - name: Build APK
+        run: |
+          flutter build apk --release \
+            --target lib/main_prod.dart \
+            --target-platform android-arm,android-arm64,android-x64 \
+            --split-per-abi
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v5
+        with:
+          name: hiddify-custom-apk
+          path: build/app/outputs/flutter-apk/*.apk
+          if-no-files-found: error

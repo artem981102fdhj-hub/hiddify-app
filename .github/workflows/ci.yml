@@ -1,23 +1,8 @@
 name: CI
 on:
-  # pull_request:
-  #   paths-ignore:
-  #     - '**.md'
-  #     - 'docs/**'
-  #     - 'test.configs/**'
-  #     - '.vscode/'
-  #     - 'appcast.xml'
-  push:
-    branches:
-       - main
-       - dev
-       - android-fix-action-bug
-       - new-design-v2 
-    paths-ignore:
-      - '**.md'
-      - 'docs/**'
-      - '.vscode/'
-      - 'appcast.xml'
+  # Отключено в форке: апстрим-CI требует секреты оригинального репозитория.
+  # Для сборки APK используйте workflow "Build Android APK".
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
