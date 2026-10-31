@@ -223,6 +223,20 @@
     "settings": {
       "title": "Settings",
       "resetTunnel": "Reset VPN profile",
+      "appearance": {
+        "title": "Appearance",
+        "seedColor": "Main color",
+        "seedColorAuto": "System (automatic)",
+        "idleButtonColor": "Connect button color",
+        "connectedButtonColor": "Connected button color",
+        "defaultColor": "Default",
+        "hexLabel": "HEX color, e.g. #1E88E5",
+        "invalidHex": "Enter a color as #RRGGBB",
+        "apply": "Apply",
+        "cornerRadius": "Corner roundness",
+        "fontSize": "Font size",
+        "reset": "Reset appearance"
+      },
       "options": {
         "import": {
           "clipboard": "Import options from clipboard",
